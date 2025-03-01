@@ -11,6 +11,7 @@ interface ServicioClima {
     suspend fun obtenerClimaActual( //recuerda que lo de suspend es que la solicitud es asíncrona y tirará de corutinas para llamarla desde viewmodel
         @Query("q") ciudad: String,
         @Query("appid") apiKey: String,
-        @Query("units") unidades: String = "metric"
+        @Query("units") unidades: String = "metric",
+        @Query("lang") idioma: String = "es"
     ): RespuestaClima
 }
