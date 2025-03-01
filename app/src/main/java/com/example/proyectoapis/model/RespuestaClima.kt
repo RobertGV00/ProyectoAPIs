@@ -1,4 +1,4 @@
-package com.example.climaapp.model
+package com.example.proyectoapis.model
 
 //para futuras modificaciones de lo que se quiere mostrar leer el txt que está desgranado el json que devuelve y solo es ir metiendo val con cada campo.
 
