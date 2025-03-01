@@ -1,0 +1,16 @@
+package com.example.proyectoapis.api
+
+import com.example.proyectoapis.model.RespuestaClima
+import retrofit2.http.GET
+import retrofit2.http.Query
+
+interface ServicioClima {
+    //obtener el clima actual de una ciudad:
+
+    @GET("weather")
+    suspend fun obtenerClimaActual( //recuerda que lo de suspend es que la solicitud es asíncrona y tirará de corutinas para llamarla desde viewmodel
+        @Query("q") ciudad: String,
+        @Query("appid") apiKey: String,
+        @Query("units") unidades: String = "metric"
+    ): RespuestaClima
+}
