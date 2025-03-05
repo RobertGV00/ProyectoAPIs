@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("kotlin-kapt") // Habilita KAPT para Room
 }
 
 android {
@@ -58,6 +59,11 @@ dependencies {
 
     //para cargar imagenes coil:
     implementation(libs.coil.kt.coil.compose)
+
+    // Dependecnias de room
+    implementation("androidx.room:room-runtime:2.6.1") // Última versión estable
+    kapt("androidx.room:room-compiler:2.6.1") // Para la generación de código
+    implementation("androidx.room:room-ktx:2.6.1") // Para usar corrutinas con Room
 
     implementation("androidx.navigation:navigation-compose:2.5.3")
 
