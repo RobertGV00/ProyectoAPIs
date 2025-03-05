@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
+import com.example.proyectoapis.view.ui.Navegacion
 import com.example.proyectoapis.view.ui.PantallaClima
 
 
@@ -12,7 +13,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
-                PantallaClima()  // Llamamos al Composable que acabamos de crear
+                Navegacion()  // Llamamos al Composable que acabamos de crear
             }
         }
     }
