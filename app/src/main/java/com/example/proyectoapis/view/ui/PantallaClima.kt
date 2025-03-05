@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -37,10 +36,10 @@ fun PantallaClima(navController: NavController, ciudad: String = "Madrid", viewM
                 title = {
                     Text(
                         text = stringResource(R.string.titulo_clima),
-                        color = Color.White,
-                        fontSize = 20.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        color= Color.White,
+                        fontSize = 30.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF6200EE))
@@ -57,11 +56,7 @@ fun PantallaClima(navController: NavController, ciudad: String = "Madrid", viewM
                     ) {
                         Icon(Icons.Outlined.Place, contentDescription = null, tint = Color(0xFF6200EE))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(R.string.ciudades_guardadas),
-                            color = Color(0xFF6200EE),
-                            fontSize = 18.sp
-                        )
+                        Text(stringResource(R.string.ciudades_guardadas), color = Color(0xFF6200EE))
                     }
                     Spacer(modifier = Modifier.weight(1f))
                 }
@@ -89,7 +84,6 @@ fun PantallaClima(navController: NavController, ciudad: String = "Madrid", viewM
 
             Button(
                 onClick = {
-                    println("Botón presionado. Ciudad: \${ciudad.text}")
                     if (ciudad.text.isNotEmpty()) {
                         viewModel.obtenerClima(ciudad.text)
                     }
@@ -130,16 +124,27 @@ fun PantallaClima(navController: NavController, ciudad: String = "Madrid", viewM
                         Text(text = "${stringResource(R.string.descripcion_clima)} ${it.weather[0].description}", style = MaterialTheme.typography.bodyMedium)
 
                         AsyncImage(
-                            model = "https://openweathermap.org/img/wn/${clima.weather[0].icon}@2x.png",
+                            model = "https://openweathermap.org/img/wn/${it.weather[0].icon}@2x.png",
                             contentDescription = "Icono del clima",
                             modifier = Modifier.size(112.dp)
                         )
                     }
                 }
+
+                Button(
+                    onClick = {
+                        clima?.let { ciudad ->
+                            viewModel.guardarCiudad(ciudad)
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE))
+                ) {
+                    Text(text = stringResource(R.string.guardar_ciudad), color = Color.White)
+                }
             }
 
             mensajeError?.let {
-                Text(text = it, color = MaterialTheme.colorScheme.error)
+                Text(text = it, color = Color.Red, fontSize = 14.sp)
             }
         }
     }

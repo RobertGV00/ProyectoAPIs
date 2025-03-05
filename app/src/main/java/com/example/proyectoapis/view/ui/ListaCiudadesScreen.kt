@@ -2,71 +2,145 @@
 
 package com.example.proyectoapis.view.ui
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.proyectoapis.viewmodel.CiudadEntity
+import com.example.proyectoapis.viewmodel.ClimaViewModel
 
-// Datos de las ciudades con imágenes
-val ciudades = listOf(
-    Ciudad("Madrid", "https://media.istockphoto.com/id/1343071828/es/foto/madrid-espa%C3%B1a-horizonte-de-la-ciudad-al-amanecer-en-el-parque-de-el-retiro-con-temporada-de.jpg?s=2048x2048&w=is&k=20&c=6jEbvKY3pW2XE-V_AFfl0R-0yH5xiOjtxW8XPsTOjX4="),
-    Ciudad("Green Bay", "https://a.travel-assets.com/findyours-php/viewfinder/images/res70/34000/34849-Green-Bay.jpg"),
-    Ciudad("Bucharest", "https://images.unsplash.com/photo-1574974915729-40753c60260d?q=80&w=1973&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"),
-    Ciudad("Londres", "https://images.unsplash.com/photo-1543832923-44667a44c804?q=80&w=1944&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"),
-    Ciudad("Cuenca", "https://plus.unsplash.com/premium_photo-1697729801822-c68999fc5e5c?q=80&w=2084&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
-)
 
 // Modelo de datos para Ciudad
 data class Ciudad(val nombre: String, val imageUrl: String)
 
 @Composable
-fun ListaCiudadesScreen(navController: NavController) {
+fun ListaCiudadesScreen(navController: NavController, viewModel: ClimaViewModel = viewModel()) {
+    val ciudadesGuardadas by viewModel.ciudadesGuardadas.observeAsState(emptyList())
+    var textoBusqueda by remember { mutableStateOf("") }
+
     Scaffold(topBar = {
-        TopAppBar(title = { Text("Selecciona una ciudad") })
-    }) { padding ->
-        LazyColumn(modifier = Modifier.padding(padding).padding(16.dp)) {
-            items(ciudades) { ciudad ->
-                CiudadItem(ciudad, navController)
+        TopAppBar(
+            title = { Text("Ciudades Guardadas", color = Color.White) },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF512DA8)),
+            navigationIcon = {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = Color.White)
+                }
+            }
+        )
+    }) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFEDE7F6))
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
+
+            OutlinedTextField(
+                value = textoBusqueda,
+                onValueChange = { textoBusqueda = it },
+                label = { Text("Buscar ciudad") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            val ciudadesFiltradas = ciudadesGuardadas.filter { it.nombre.contains(textoBusqueda, ignoreCase = true) }
+
+            if (ciudadesFiltradas.isEmpty()) {
+                Text(
+                    text = "No hay ciudades que coincidan",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF311B92),
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(ciudadesFiltradas) { ciudad ->
+                        CiudadItem(ciudad, navController, viewModel)
+                    }
+                }
             }
         }
     }
 }
 
+fun obtenerImagenCiudad(ciudad: String): String {
+    val imagenesCiudades = mapOf(
+        "Madrid" to "https://media.istockphoto.com/id/1343071828/es/foto/madrid-espa%C3%B1a-horizonte-de-la-ciudad-al-amanecer-en-el-parque-de-el-retiro-con-temporada-de.jpg?s=2048x2048&w=is&k=20&c=6jEbvKY3pW2XE-V_AFfl0R-0yH5xiOjtxW8XPsTOjX4=",
+        "Green Bay" to "https://a.travel-assets.com/findyours-php/viewfinder/images/res70/34000/34849-Green-Bay.jpg",
+        "Bucharest" to "https://images.unsplash.com/photo-1574974915729-40753c60260d",
+        "Londres" to "https://images.unsplash.com/photo-1543832923-44667a44c804",
+        "Cuenca" to "https://plus.unsplash.com/premium_photo-1697729801822-c68999fc5e5c"
+    )
+    return imagenesCiudades[ciudad] ?: "https://via.placeholder.com/150"
+}
+
+
 @Composable
-fun CiudadItem(ciudad: Ciudad, navController: NavController) {
+fun CiudadItem(ciudad: CiudadEntity, navController: NavController, viewModel: ClimaViewModel) {
+    val imagenUrl = obtenerImagenCiudad(ciudad.nombre)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .clickable {
-                navController.navigate("pantallaClima/${ciudad.nombre}") // 🔹 Navega con el nombre de la ciudad seleccionada
-            },
+            .padding(vertical = 8.dp),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Imagen de la ciudad con Coil
             AsyncImage(
-                model = ciudad.imageUrl, // 🔹 Usa AsyncImage en lugar de rememberAsyncImagePainter()
-                contentDescription = ciudad.nombre,
-                modifier = Modifier
-                    .size(100.dp)
-                    .padding(8.dp),
-                contentScale = ContentScale.Crop
+                model = imagenUrl,
+                contentDescription = "Imagen de ${ciudad.nombre}",
+                modifier = Modifier.size(64.dp)
             )
-            Text(
-                text = ciudad.nombre,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(8.dp)
-            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = ciudad.nombre, fontWeight = FontWeight.Bold)
+                Text(text = "Temperatura: ${ciudad.temperatura}°C")
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            IconButton(onClick = { viewModel.actualizarClimaCiudad(ciudad.nombre) }) {
+                Icon(Icons.Default.Refresh, contentDescription = "Actualizar clima")
+            }
+
+            IconButton(onClick = { viewModel.eliminarCiudad(ciudad.nombre) }) {
+                Icon(Icons.Default.Delete, contentDescription = "Eliminar ciudad")
+            }
         }
     }
+
 }
+
+
