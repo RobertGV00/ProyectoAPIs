@@ -2,111 +2,145 @@ package com.example.proyectoapis.view.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import com.example.proyectoapis.R
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.proyectoapis.viewmodel.ClimaViewModel
 
-
-
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaClima(viewModel: ClimaViewModel = viewModel()) {
+fun PantallaClima(navController: NavController, ciudad: String = "Madrid", viewModel: ClimaViewModel = viewModel()) {
 
-    // Estado para la ciudad introducida por el usuario
-    var ciudad by remember { mutableStateOf(TextFieldValue("")) }
+    var ciudad by remember { mutableStateOf(TextFieldValue(ciudad)) }
 
-    // Observamos los estados del ViewModel
     val clima = viewModel.climaActual.observeAsState().value
     val cargando = viewModel.cargando.observeAsState(false).value
     val mensajeError = viewModel.mensajeError.observeAsState().value
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-
-        // Campo de texto mejorado para introducir la ciudad
-        TextField(
-            value = ciudad.text,
-            onValueChange = { ciudad = TextFieldValue(it) },
-            label = { Text(stringResource(R.string.introducir_ciudad)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Botón para obtener el clima
-        Button(
-            onClick = {
-                println("Botón presionado. Ciudad: ${ciudad.text}")
-                if (ciudad.text.isNotEmpty()) {
-                    viewModel.obtenerClima(ciudad.text)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.titulo_clima),
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF6200EE))
+            )
+        },
+        bottomBar = {
+            BottomAppBar(
+                containerColor = Color(0xFF3700B3),
+                content = {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Button(
+                        onClick = { navController.navigate("listaCiudades") },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White)
+                    ) {
+                        Icon(Icons.Outlined.Place, contentDescription = null, tint = Color(0xFF6200EE))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.ciudades_guardadas),
+                            color = Color(0xFF6200EE),
+                            fontSize = 18.sp
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
                 }
-            }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(text = stringResource(R.string.boton_obtener_clima))
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Indicador de carga
-        if (cargando) {
-            CircularProgressIndicator()
-        }
-
-        // Mostrar datos del clima
-        clima?.let {
-            Card(
+            OutlinedTextField(
+                value = ciudad.text,
+                onValueChange = { ciudad = TextFieldValue(it) },
+                label = { Text(stringResource(R.string.introducir_ciudad)) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                elevation = CardDefaults.cardElevation(4.dp),
-                shape = RoundedCornerShape(24.dp)
+                    .padding(8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = {
+                    println("Botón presionado. Ciudad: \${ciudad.text}")
+                    if (ciudad.text.isNotEmpty()) {
+                        viewModel.obtenerClima(ciudad.text)
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE))
             ) {
-                Column (
+                Text(text = stringResource(R.string.boton_obtener_clima), color = Color.White)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (cargando) {
+                CircularProgressIndicator()
+            }
+
+            clima?.let {
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    elevation = CardDefaults.cardElevation(4.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEDE7F6))
                 ) {
-                    Text(text = "${stringResource(R.string.ciudad)} ${it.name}", style = MaterialTheme.typography.titleMedium)
-                    Text(text = "${stringResource(R.string.temperatura)} ${it.main.temp} ${
-                        stringResource(R.string.grados)}", style = MaterialTheme.typography.bodyMedium)
-                    Text(text = "${stringResource(R.string.temperatura_min)} ${it.main.temp_min}")
-                    Text(text = "${stringResource(R.string.temperatura_max)} ${it.main.temp_max}")
-                    Text(text = "${stringResource(R.string.humedad)} ${it.main.humidity}")
-                    Text(text = "${stringResource(R.string.Sensacion_termica)} ${it.main.feels_like}")
-                    Text(text = "${stringResource(R.string.descripcion_clima)} ${it.weather[0].description}", style = MaterialTheme.typography.bodyMedium)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(text = "${stringResource(R.string.ciudad)} ${it.name}", style = MaterialTheme.typography.titleMedium)
+                        Text(text = "${stringResource(R.string.temperatura)} ${it.main.temp} ${stringResource(R.string.grados)}", style = MaterialTheme.typography.bodyMedium)
+                        Text(text = "${stringResource(R.string.temperatura_min)} ${it.main.temp_min}")
+                        Text(text = "${stringResource(R.string.temperatura_max)} ${it.main.temp_max}")
+                        Text(text = "${stringResource(R.string.humedad)} ${it.main.humidity}")
+                        Text(text = "${stringResource(R.string.Sensacion_termica)} ${it.main.feels_like}")
+                        Text(text = "${stringResource(R.string.descripcion_clima)} ${it.weather[0].description}", style = MaterialTheme.typography.bodyMedium)
 
-                    AsyncImage(
-                        model = "https://openweathermap.org/img/wn/${clima.weather[0].icon}@2x.png",
-                        contentDescription = "Icono del clima",
-                        modifier = Modifier.size(112.dp)
-                    )
+                        AsyncImage(
+                            model = "https://openweathermap.org/img/wn/${clima.weather[0].icon}@2x.png",
+                            contentDescription = "Icono del clima",
+                            modifier = Modifier.size(112.dp)
+                        )
+                    }
                 }
             }
 
-        }
-
-
-        // Mensaje de error
-        mensajeError?.let {
-            Text(text = it, color = MaterialTheme.colorScheme.error)
+            mensajeError?.let {
+                Text(text = it, color = MaterialTheme.colorScheme.error)
+            }
         }
     }
 }

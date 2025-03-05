@@ -14,4 +14,6 @@
     <string name="humedad">Humedad</string>
     <string name="Sensacion_termica">Sensación térmica</string>
     <string name="descripcion_clima">ahora mismo</string>
+    <string name="ciudades_guardadas">Ciudades guardadas</string>
+    <string name="titulo_clima">Clima</string>
 </resources>
